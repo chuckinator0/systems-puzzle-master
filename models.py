@@ -29,7 +29,8 @@ class Items(Base):
     '''
     date_added = Column(DateTime(),server_default=func.now())
 
-    #The code for init and repr is missing, so that might be why the table entries were empty
+    #The code for init and repr is missing, so that might be why the table entries were empty.
+    #This was it. Putting this in allowed query to work as intended. Challenge complete!
     def __init__(self,name,quantity,description,date_added):
         self.name = name
         self.quantity = quantity
