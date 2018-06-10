@@ -1,8 +1,16 @@
 # Chuck's Solution for DevOps Puzzle
 
-## Topic 1
-## Topic 2
-## Topic 3
+## The Actual Process
+
+
+
+## Big Takeaways
+
+
+
+## A Golden Narrative
+
+As an educator, I know the power of narrative to put learning into perspective. Constructing a narrative about an idea after the fact can be helpful for synthesizing the experience and shaping future learning. I think recording and paying attention to narrative can play a role in DevOps for teams of engineers to think about their thinking. I'll offer a narrative through the ideas of this puzzle that represents the thoughts of someone who thinks clearly and efficiently from the beginning.
 
 
 
