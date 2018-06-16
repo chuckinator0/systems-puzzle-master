@@ -12,9 +12,12 @@
 
 As an educator, I know the power of narrative to put learning into perspective. Constructing a narrative about an idea after the fact can be helpful for synthesizing the experience and shaping future learning. I think recording and paying attention to narrative can play a role in DevOps for teams of engineers to think about their thinking. I'll offer a narrative through the ideas of this puzzle that represents the thoughts of someone who thinks clearly and efficiently from the beginning.
 
+The overall strucutre of the app is:
 
+    [web browser]--port 8080--[nginx]--port 80--[flaskapp]--port 5432--[postgres]-[database volume]
+The brackets represent containers or chunks that communicate with one another. The dashes represent the connections between the containers. The first issue that arises is that we are unable to connect to the app via `http://localhost:8080`. One reason for this might be that The ports aren't set correctly, meaning there is a breakdown in communication between the browser and the app. Combing through the code, we find that the ports aren't set correctly. Perhaps someone was testing with different ports and then didn't change it back. We might want to set a testing protocol so that this doesn't happen in the future. In `flaskapp.conf`, we need to set the port to `80` and we need to add `port=80` in the argument of `app.run` in `app.py`. Also note that in `docker-compose.yml`, the nginx port command was originally `80:8080`, which means to connect the internal `port 8080` to the host machine's `port 80`, but this is backwards. We want to connect the internal `port 80` to the host machine's `port 8080`, so we need to change `80:8080` to `8080:80` in the docker-compose file. Now, the ports should be correctly set between the containers, so we should be able to connect to localhost. Rebuilding the system in docker and running with the instructions given from the developer, sure enough, we are able to get to the splash page that requests information about selling different items.
 
-
+The second issue that happens is that upon pressing `Enter`, we get a 504 server timeout error. This means that the request is getting processed, but the server isn't giving the browser back what it needs to show the contents of the database. Something is wrong here.
 
 # Insight DevOps Engineering Systems Puzzle
 
