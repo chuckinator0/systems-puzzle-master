@@ -1,23 +1,37 @@
 # Chuck's Solution for DevOps Puzzle
 
-## The Actual Process
-
-
-
-## Big Takeaways
-
-
-
 ## A Golden Narrative
 
 As an educator, I know the power of narrative to put learning into perspective. Constructing a narrative about an idea after the fact can be helpful for synthesizing the experience and shaping future learning. I think recording and paying attention to narrative can play a role in DevOps for teams of engineers to think about their thinking. I'll offer a narrative through the ideas of this puzzle that represents the thoughts of someone who thinks clearly and efficiently from the beginning.
 
 The overall strucutre of the app is:
 
-    [web browser]--port 8080--[nginx]--port 80--[flaskapp]--port 5432--[postgres]-[database volume]
-The brackets represent containers or chunks that communicate with one another. The dashes represent the connections between the containers. The first issue that arises is that we are unable to connect to the app via `http://localhost:8080`. One reason for this might be that The ports aren't set correctly, meaning there is a breakdown in communication between the browser and the app. Combing through the code, we find that the ports aren't set correctly. Perhaps someone was testing with different ports and then didn't change it back. We might want to set a testing protocol so that this doesn't happen in the future. In `flaskapp.conf`, we need to set the port to `80` and we need to add `port=80` in the argument of `app.run` in `app.py`. Also note that in `docker-compose.yml`, the nginx port command was originally `80:8080`, which means to connect the internal `port 8080` to the host machine's `port 80`, but this is backwards. We want to connect the internal `port 80` to the host machine's `port 8080`, so we need to change `80:8080` to `8080:80` in the docker-compose file. Now, the ports should be correctly set between the containers, so we should be able to connect to localhost. Rebuilding the system in docker and running with the instructions given from the developer, sure enough, we are able to get to the splash page that requests information about selling different items.
+    [web browser on host machine]--port 8080--[nginx]--port 80--[flaskapp]--port 5432--[postgres]-[database volume]
+The brackets represent containers or pieces of the system that communicate with one another. The dashes represent the connections between the containers. The first issue that arises is that we are unable to connect to the app via `http://localhost:8080`. One reason for this might be that the ports aren't set correctly, meaning there is a breakdown in communication between the containers somewhere. Combing through the code, we find that the ports aren't set correctly. Perhaps someone was testing with different ports and then didn't change it back. We might want to set a testing protocol so that this doesn't happen in the future. In `flaskapp.conf`, we need to set the port to `80` and we need to add `port=80` in the argument of `app.run` in `app.py`. Also note that in `docker-compose.yml`, the nginx port command was originally `80:8080`, which means to connect the internal `port 8080` to the host machine's `port 80`, but this is backwards. We want to connect the internal `port 80` to the host machine's `port 8080`, so we need to change `80:8080` to `8080:80` in the docker-compose file. Now, the ports should be correctly set between the containers, so we should be able to connect to localhost. Rebuilding the system in docker and running with the instructions given from the developer, sure enough, we are able to get to the main etsy-esque site.
 
-The second issue that happens is that upon pressing `Enter`, we get a 504 server timeout error. This means that the request is getting processed, but the server isn't giving the browser back what it needs to show the contents of the database. Something is wrong here.
+The second issue is that upon pressing `Enter`, instead of the contents of the database being printed, only empty list items separated by commas are printed. This could mean that the database is filled with empty entries or the app isn't correctly displaying the database entries. Going over `app.py`, `database.py`, and `models.py` with a fine tooth comb alongside flask and sqlalchemy documentation and blog posts, we find that in `models.py`, the class `Items()` is supposed to have
+    
+    def __init__(self,name,quantity,description,date_added):
+and
+
+    def __repr__(self):
+statements. The `__init__` statement initializes the class attributes so that they can be referenced in `app.py` to add user inputs to the database, and the `__repr__` statement tells flask how to represent data entries when queried. This enables the code in `app.py` to properly display the contents of the database upon successful submission.
+
+## The Actual Process
+
+Hindsight is 2020 (8080?). I made a lot of mistakes and went down a few wrong turns before figuring out how to make the app work. First, I spent entirely too long figuring out how docker works. I didn't realize at first that all the containers needed to be run together with `docker-compose up`, so I spent some time chasing errors that were only an issue because the containers weren't communicating. I also didn't realize at first that for codebase changes to take effect, I had to rebuiuld the image.
+
+Next, I created a 504 error for myself. After I figured out how to set the ports correctly for nginx and flaskapp, I went too far and also changed the port between flaskapp and postgres. This ensured that flaskapp couldn't communicate with the database, causing a 504 error. In this process, I learned more about exposing and listening to ports in `.conf` files. I was able to determine that the miscommunication was between flaskapp and postgres by commenting out all references to the database and just returning `'Hello World'` upon successful submission of the form. This worked without 504 error, which helped me take my focus off of `app.py` and towards looking at the ports between the containers. I then looked more deeply into how the docker-compose file orchestrated communication between the different containers via ports.
+
+Then, I combed flask and sqlalchemy documentation and blog posts to understand how each part of `database.py`, `app.py`, `models.py`, `forms.py` interact with each other. I had been ignoring the `__init__` and `__repr__` calls in the documentation because I thought they didn't pertain to my situation, but after reading a more detailed blog post that outlined the purpose of those calls, I realized that the `Items()` class needed to be initialized and needed a representation for queries.
+
+There are many other small tweaks along the way that I left as comments in the code itself, and I can speak to those in more detail.
+
+## Big Takeaways
+
+One big takeaway is the importance of documention. It is important to have examples of "minimally viable code" and then understand how the app in question builds upon a minimally viable framework. Not only that, but when I have very little experience with a technology, it is important to find explanations of what specific functions do and what they look like in context. Some documentation is technically correct, but fails to give context or illustrative examples. Moreover, internal documentation is important. As part of an engineering team, it is essential to develop protocols for documenting a codebase in a clear, comprehensible way. Not only does this help others understand how a specific codebase works, but it's also illuminating for developers themselves to explain an idea "out loud". My teaching experience tells me that nothing clarifies one's thinking quite like preparing to explain an idea simply. This undoubtedly leads to a more structurally sound, more comprehensible codebase that is more conducive to collaborative feedback.
+
+Another big takeaway is that I personally struggle when I don't have a colleague to bounce ideas around with. In many of the places where I wasted a lot of time poring over documentation, I could have been much more efficient with a short discussion with the developer or another colleague. An important part of working with a team of developers is to establish effective norms to balance collaborative against individual problem solving.
 
 # Insight DevOps Engineering Systems Puzzle
 
